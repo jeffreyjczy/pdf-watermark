@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-import subprocess
 import sys
 import os
 from pdf_watermark.watermark import insert_watermark_gui
@@ -123,8 +122,8 @@ tk.Button(
     root,
     text="Apply Watermark",
     command=apply_watermark,
-    bg="#4CAF50",
-    fg="white",
+    bg="#FFFFFF",
+    fg="black",
     width=25
 ).pack(pady=15)
 
