@@ -27,7 +27,9 @@ def add_watermark_to_pdf(
 
     page_sizes = []
     for page in pdf_to_transform.pages:
-        page_sizes.append((page.mediabox.width, page.mediabox.height, page.get("/Rotate", 0)))
+        page_sizes.append(
+            (page.mediabox.width, page.mediabox.height, page.get("/Rotate", 0))
+        )
 
     order = []
     # Only one watermark is computed per page size
@@ -55,7 +57,11 @@ def add_watermark_to_pdf(
             for index, (page, (page_width, page_height, rotation)) in enumerate(
                 zip(pdf_to_transform.pages, page_sizes)
             ):
-                if page_width == watermark_width and page_height == watermark_height and rotation == page_rotation:
+                if (
+                    page_width == watermark_width
+                    and page_height == watermark_height
+                    and rotation == page_rotation
+                ):
                     page.merge_page(watermark_pdf.pages[0])
                     pdf_writer.add_page(page)
                     order.append(index)

@@ -4,12 +4,23 @@ Handles custom font registration including TTF and CID fonts.
 """
 
 import os
+import sys
 from typing import Optional
 
 import reportlab.rl_config
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 from reportlab.pdfbase.ttfonts import TTFont
+
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS  # PyInstaller temp dir
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 
 # Standard fonts that come with reportlab and don't need registration
 STANDARD_FONTS = [
@@ -96,7 +107,9 @@ def register_ttf_font(font_name: str) -> None:
     possible_extensions = [".ttf", ".TTF", ".otf", ".OTF"]
     for ext in possible_extensions:
         try:
-            ttf_font = TTFont(font_name, font_name + ext)
+            folder_path = resource_path(f"fonts/{font_name}.ttf")
+            ttf_font = TTFont(font_name, folder_path)
+            # "Tahoma", ".\\fonts\\Tahoma.ttf"
             pdfmetrics.registerFont(ttf_font)
             return
         except Exception as e:
