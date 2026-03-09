@@ -224,7 +224,7 @@ def apply_watermark():
 
 root = ctk.CTk()
 root.title("PDF Watermark Tool")
-root.geometry("1000x880")
+root.geometry("1000x720")
 root.resizable(True, True)
 
 # Configure grid weight for responsive design
@@ -235,26 +235,34 @@ root.grid_columnconfigure(0, weight=1)
 main_frame = ctk.CTkFrame(root, corner_radius=15)
 main_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 main_frame.grid_columnconfigure(0, weight=1)
+main_frame.grid_columnconfigure(1, weight=1)
+
+# Title and Subtitle container
+header_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+header_frame.grid(row=0, column=0, columnspan=2, padx=20, pady=(20, 10), sticky="ew")
+header_frame.grid_columnconfigure(0, weight=1)
 
 # Title
 title_label = ctk.CTkLabel(
-    main_frame,
+    header_frame,
     text="✨ PDF Watermark Tool ✨",
-    font=ctk.CTkFont(size=28, weight="bold"),
+    font=ctk.CTkFont(size=24, weight="bold"),
+    anchor="center",
 )
-title_label.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="ew")
+title_label.grid(row=0, column=0, sticky="ew")
 
 subtitle_label = ctk.CTkLabel(
-    main_frame,
+    header_frame,
     text="Add watermarks to your PDF files with ease",
     font=ctk.CTkFont(size=14),
     text_color="gray",
+    anchor="center",
 )
-subtitle_label.grid(row=1, column=0, padx=20, pady=0, sticky="ew")
+subtitle_label.grid(row=1, column=0, sticky="ew")
 
 # Input PDF Section
 input_frame = ctk.CTkFrame(main_frame, corner_radius=10)
-input_frame.grid(row=2, column=0, padx=20, pady=10, sticky="ew")
+input_frame.grid(row=1, column=0, padx=(20, 5), pady=10, sticky="ew")
 input_frame.grid_columnconfigure(0, weight=1)
 
 input_label = ctk.CTkLabel(
@@ -294,7 +302,7 @@ file_count_label.grid(row=2, column=0, columnspan=2, padx=15, pady=(0, 15), stic
 
 # Output Folder Section
 output_frame = ctk.CTkFrame(main_frame, corner_radius=10)
-output_frame.grid(row=3, column=0, padx=20, pady=10, sticky="ew")
+output_frame.grid(row=1, column=1, padx=(5, 20), pady=10, sticky="ew")
 output_frame.grid_columnconfigure(0, weight=1)
 
 output_label = ctk.CTkLabel(
@@ -311,7 +319,7 @@ output_folder_entry = ctk.CTkEntry(
     height=40,
     font=ctk.CTkFont(size=13),
 )
-output_folder_entry.grid(row=1, column=0, padx=(15, 10), pady=(0, 15), sticky="ew")
+output_folder_entry.grid(row=1, column=0, padx=(15, 10), pady=(0, 10), sticky="ew")
 
 output_browse_button = ctk.CTkButton(
     output_frame,
@@ -322,11 +330,19 @@ output_browse_button = ctk.CTkButton(
     font=ctk.CTkFont(size=13, weight="bold"),
     corner_radius=8,
 )
-output_browse_button.grid(row=1, column=1, padx=(0, 15), pady=(0, 15), sticky="e")
+output_browse_button.grid(row=1, column=1, padx=(0, 15), pady=(0, 10), sticky="e")
+
+# Spacer to match input section height
+output_spacer = ctk.CTkLabel(
+    output_frame,
+    text="",
+    font=ctk.CTkFont(size=12),
+)
+output_spacer.grid(row=2, column=0, columnspan=2, padx=15, pady=(0, 15), sticky="w")
 
 # Watermark Settings Section (Combined: Text, Position, Options)
 settings_frame = ctk.CTkFrame(main_frame, corner_radius=10)
-settings_frame.grid(row=4, column=0, padx=20, pady=10, sticky="ew")
+settings_frame.grid(row=2, column=0, columnspan=2, padx=20, pady=10, sticky="ew")
 settings_frame.grid_columnconfigure(0, weight=1)
 
 settings_label = ctk.CTkLabel(
@@ -416,7 +432,7 @@ options_label = ctk.CTkLabel(
     font=ctk.CTkFont(size=13),
     anchor="w",
 )
-options_label.grid(row=6, column=0, columnspan=4, padx=5, pady=(3, 3), sticky="w")
+options_label.grid(row=6, column=0, columnspan=4, padx=16, pady=(3, 3), sticky="w")
 
 # Combine PDFs checkbox
 combine_pdfs_var = ctk.BooleanVar(value=False)
@@ -440,9 +456,13 @@ apply_button = ctk.CTkButton(
     fg_color="#2ecc71",
     hover_color="#27ae60",
 )
-apply_button.grid(row=5, column=0, padx=20, pady=20)
+apply_button.grid(row=3, column=0, columnspan=2, padx=20, pady=10)
 
 root.mainloop()
 
-# BUILD script
+# windows BUILD script
 # pyinstaller --onefile --windowed --add-data "fonts;fonts" main.py
+
+# Mac BUILD script
+# source venv/bin/activate
+# pyinstaller --onefile --windowed --add-data "fonts:fonts" main.py
