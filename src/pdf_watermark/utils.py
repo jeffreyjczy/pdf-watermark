@@ -41,7 +41,7 @@ def draw_centered_string_with_line_breaks(
     )  # line height is set when setting the font of the canvas
     y += (len(text_lines) - 1) * line_height / 2  # also center the text vertically
     for line in text_lines:
-        watermark.drawString(x, y, line.encode("utf-8"))
+        watermark.drawCentredString(x, y, line)
         y -= watermark._leading
 
 

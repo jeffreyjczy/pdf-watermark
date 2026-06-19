@@ -266,8 +266,8 @@ class AutoHideScrollableFrame(ctk.CTkScrollableFrame):
 
 root = ctk.CTk()
 root.title("PDF Watermark Tool")
-root.geometry("1000x880")
-root.minsize(640, 520)
+root.geometry("1080x920")
+root.minsize(650, 520)
 root.resizable(True, True)
 
 # Configure grid weight for responsive design
@@ -284,19 +284,26 @@ main_frame = AutoHideScrollableFrame(
 main_frame.grid(row=0, column=0, padx=12, pady=12, sticky="nsew")
 main_frame.grid_columnconfigure(0, weight=1)
 
+# Title and Subtitle container
+header_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+header_frame.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="ew")
+header_frame.grid_columnconfigure(0, weight=1)
+
 # Title
 title_label = ctk.CTkLabel(
-    main_frame,
+    header_frame,
     text="✨ PDF Watermark Tool ✨",
-    font=ctk.CTkFont(size=28, weight="bold"),
+    font=ctk.CTkFont(size=24, weight="bold"),
+    anchor="center",
 )
-title_label.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="ew")
+title_label.grid(row=0, column=0, sticky="ew")
 
 subtitle_label = ctk.CTkLabel(
-    main_frame,
+    header_frame,
     text="Add watermarks to your PDF files with ease",
     font=ctk.CTkFont(size=14),
     text_color="gray",
+    anchor="center",
 )
 subtitle_label.grid(row=1, column=0, padx=20, pady=(0, 4), sticky="ew")
 
@@ -359,7 +366,7 @@ output_folder_entry = ctk.CTkEntry(
     height=40,
     font=ctk.CTkFont(size=13),
 )
-output_folder_entry.grid(row=1, column=0, padx=(15, 10), pady=(0, 15), sticky="ew")
+output_folder_entry.grid(row=1, column=0, padx=(15, 10), pady=(0, 10), sticky="ew")
 
 output_browse_button = ctk.CTkButton(
     output_frame,
@@ -370,7 +377,15 @@ output_browse_button = ctk.CTkButton(
     font=ctk.CTkFont(size=13, weight="bold"),
     corner_radius=8,
 )
-output_browse_button.grid(row=1, column=1, padx=(0, 15), pady=(0, 15), sticky="e")
+output_browse_button.grid(row=1, column=1, padx=(0, 15), pady=(0, 10), sticky="e")
+
+# Spacer to match input section height
+output_spacer = ctk.CTkLabel(
+    output_frame,
+    text="",
+    font=ctk.CTkFont(size=12),
+)
+output_spacer.grid(row=2, column=0, columnspan=2, padx=15, pady=(0, 15), sticky="w")
 
 # Watermark Settings Section (Combined: Text, Position, Options)
 settings_frame = ctk.CTkFrame(main_frame, corner_radius=10)
@@ -473,7 +488,7 @@ options_label = ctk.CTkLabel(
     font=ctk.CTkFont(size=13),
     anchor="w",
 )
-options_label.grid(row=6, column=0, columnspan=4, padx=5, pady=(3, 3), sticky="w")
+options_label.grid(row=6, column=0, columnspan=4, padx=16, pady=(3, 3), sticky="w")
 
 # Combine PDFs checkbox
 combine_pdfs_var = ctk.BooleanVar(value=False)
@@ -502,5 +517,9 @@ main_frame.grid_rowconfigure(6, weight=1)
 
 root.mainloop()
 
-# BUILD script
+# windows BUILD script
 # pyinstaller --onefile --windowed --add-data "fonts;fonts" main.py
+
+# Mac BUILD script
+# source venv/bin/activate
+# pyinstaller --onefile --windowed --add-data "fonts:fonts" main.py
