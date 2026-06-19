@@ -220,20 +220,68 @@ def apply_watermark():
         messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
 
+class AutoHideScrollableFrame(ctk.CTkScrollableFrame):
+    """Scrollable frame that only shows its scrollbar when content overflows."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._scrollbar_visible = True
+
+        if self._orientation == "vertical":
+            self._parent_canvas.configure(yscrollcommand=self._update_scrollbar)
+        else:
+            self._parent_canvas.configure(xscrollcommand=self._update_scrollbar)
+
+        self._parent_canvas.bind("<Configure>", self._handle_canvas_configure, add="+")
+        self.bind("<Configure>", self._handle_content_configure, add="+")
+        self.after_idle(self._refresh_scrollbar_visibility)
+
+    def _update_scrollbar(self, first, last):
+        first = float(first)
+        last = float(last)
+        self._scrollbar.set(first, last)
+
+        should_show = first > 0.0 or last < 1.0
+        if should_show and not self._scrollbar_visible:
+            self._scrollbar.grid()
+            self._scrollbar_visible = True
+        elif not should_show and self._scrollbar_visible:
+            self._scrollbar.grid_remove()
+            self._scrollbar_visible = False
+
+    def _handle_canvas_configure(self, _event):
+        self._refresh_scrollbar_visibility()
+
+    def _handle_content_configure(self, _event):
+        self._refresh_scrollbar_visibility()
+
+    def _refresh_scrollbar_visibility(self):
+        if self._orientation == "vertical":
+            self._update_scrollbar(*self._parent_canvas.yview())
+        else:
+            self._update_scrollbar(*self._parent_canvas.xview())
+
+
 # ---------------- GUI ----------------
 
 root = ctk.CTk()
 root.title("PDF Watermark Tool")
 root.geometry("1000x880")
+root.minsize(640, 520)
 root.resizable(True, True)
 
 # Configure grid weight for responsive design
 root.grid_rowconfigure(0, weight=1)
 root.grid_columnconfigure(0, weight=1)
 
-# Main container frame
-main_frame = ctk.CTkFrame(root, corner_radius=15)
-main_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+# Main scrollable container frame
+main_frame = AutoHideScrollableFrame(
+    root,
+    corner_radius=15,
+    scrollbar_button_color="#aeb8c4",
+    scrollbar_button_hover_color="#8793a1",
+)
+main_frame.grid(row=0, column=0, padx=12, pady=12, sticky="nsew")
 main_frame.grid_columnconfigure(0, weight=1)
 
 # Title
@@ -250,11 +298,11 @@ subtitle_label = ctk.CTkLabel(
     font=ctk.CTkFont(size=14),
     text_color="gray",
 )
-subtitle_label.grid(row=1, column=0, padx=20, pady=0, sticky="ew")
+subtitle_label.grid(row=1, column=0, padx=20, pady=(0, 4), sticky="ew")
 
 # Input PDF Section
 input_frame = ctk.CTkFrame(main_frame, corner_radius=10)
-input_frame.grid(row=2, column=0, padx=20, pady=10, sticky="ew")
+input_frame.grid(row=2, column=0, padx=16, pady=8, sticky="ew")
 input_frame.grid_columnconfigure(0, weight=1)
 
 input_label = ctk.CTkLabel(
@@ -294,7 +342,7 @@ file_count_label.grid(row=2, column=0, columnspan=2, padx=15, pady=(0, 15), stic
 
 # Output Folder Section
 output_frame = ctk.CTkFrame(main_frame, corner_radius=10)
-output_frame.grid(row=3, column=0, padx=20, pady=10, sticky="ew")
+output_frame.grid(row=3, column=0, padx=16, pady=8, sticky="ew")
 output_frame.grid_columnconfigure(0, weight=1)
 
 output_label = ctk.CTkLabel(
@@ -326,7 +374,7 @@ output_browse_button.grid(row=1, column=1, padx=(0, 15), pady=(0, 15), sticky="e
 
 # Watermark Settings Section (Combined: Text, Position, Options)
 settings_frame = ctk.CTkFrame(main_frame, corner_radius=10)
-settings_frame.grid(row=4, column=0, padx=20, pady=10, sticky="ew")
+settings_frame.grid(row=4, column=0, padx=16, pady=8, sticky="ew")
 settings_frame.grid_columnconfigure(0, weight=1)
 
 settings_label = ctk.CTkLabel(
@@ -360,45 +408,54 @@ position_label = ctk.CTkLabel(
 )
 position_label.grid(row=3, column=0, columnspan=4, padx=15, pady=(5, 3), sticky="w")
 
-# X and Y Position in same row
-settings_frame.grid_columnconfigure(1, weight=1)
-settings_frame.grid_columnconfigure(3, weight=1)
+# X and Y Position in a responsive row
+position_controls_frame = ctk.CTkFrame(settings_frame, fg_color="transparent")
+position_controls_frame.grid(
+    row=4, column=0, columnspan=4, padx=15, pady=(0, 3), sticky="ew"
+)
+position_controls_frame.grid_columnconfigure((0, 1), weight=1, uniform="position")
+
+x_control_frame = ctk.CTkFrame(position_controls_frame, fg_color="transparent")
+x_control_frame.grid(row=0, column=0, padx=(0, 8), sticky="ew")
+x_control_frame.grid_columnconfigure(1, weight=1)
 
 x_label = ctk.CTkLabel(
-    settings_frame,
+    x_control_frame,
     text="X Offset:",
     font=ctk.CTkFont(size=12),
     anchor="w",
 )
-x_label.grid(row=4, column=0, padx=15, pady=(0, 3), sticky="w")
+x_label.grid(row=0, column=0, padx=(0, 8), sticky="w")
 
 x_position_entry = ctk.CTkEntry(
-    settings_frame,
+    x_control_frame,
     placeholder_text="0",
     height=35,
-    width=100,
     font=ctk.CTkFont(size=13),
 )
 x_position_entry.insert(0, "0")
-x_position_entry.grid(row=4, column=0, padx=70, pady=(0, 3), sticky="w")
+x_position_entry.grid(row=0, column=1, sticky="ew")
+
+y_control_frame = ctk.CTkFrame(position_controls_frame, fg_color="transparent")
+y_control_frame.grid(row=0, column=1, padx=(8, 0), sticky="ew")
+y_control_frame.grid_columnconfigure(1, weight=1)
 
 y_label = ctk.CTkLabel(
-    settings_frame,
+    y_control_frame,
     text="Y Offset:",
     font=ctk.CTkFont(size=12),
     anchor="w",
 )
-y_label.grid(row=4, column=1, padx=(5, 10), pady=(0, 3), sticky="w")
+y_label.grid(row=0, column=0, padx=(0, 8), sticky="w")
 
 y_position_entry = ctk.CTkEntry(
-    settings_frame,
+    y_control_frame,
     placeholder_text="0",
     height=35,
-    width=100,
     font=ctk.CTkFont(size=13),
 )
 y_position_entry.insert(0, "0")
-y_position_entry.grid(row=4, column=1, padx=70, pady=(0, 3), sticky="w")
+y_position_entry.grid(row=0, column=1, sticky="ew")
 
 # Position instructions
 position_info = ctk.CTkLabel(
@@ -441,6 +498,7 @@ apply_button = ctk.CTkButton(
     hover_color="#27ae60",
 )
 apply_button.grid(row=5, column=0, padx=20, pady=20)
+main_frame.grid_rowconfigure(6, weight=1)
 
 root.mainloop()
 
