@@ -1,0 +1,2 @@
+"""Desktop PDF toolkit application."""
+
