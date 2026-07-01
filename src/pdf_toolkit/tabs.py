@@ -784,14 +784,14 @@ class MergerTab:
             row=0, column=0, padx=(0, 8), sticky="w"
         )
         position_entry = ctk.CTkEntry(settings_row, width=120, height=34)
-        position_entry.insert(0, "0")
+        position_entry.insert(0, self._default_insert_after_page())
         position_entry.grid(row=0, column=1, sticky="w")
         position_entry.bind("<KeyRelease>", self._handle_position_changed)
         row_state["position_entry"] = position_entry
 
         info_label = ctk.CTkLabel(
             row_frame,
-            text="Use 0 to insert before original page 1.",
+            text=self._insert_position_hint(),
             text_color="gray",
             font=ctk.CTkFont(size=12),
             anchor="w",
@@ -811,10 +811,8 @@ class MergerTab:
             row_state["page_count"] = 0
             row_state["preview_page"] = 1
             set_entry_text(row_state["path_entry"], "")
-            set_entry_text(row_state["position_entry"], "0")
-            row_state["info_label"].configure(
-                text="Use 0 to insert before original page 1."
-            )
+            set_entry_text(row_state["position_entry"], self._default_insert_after_page())
+            row_state["info_label"].configure(text=self._insert_position_hint())
         else:
             self.insert_rows.remove(row_state)
             row_state["frame"].destroy()
@@ -845,6 +843,7 @@ class MergerTab:
         self.original_info_label.configure(
             text=f"{display_path(path)} has {self.original_page_count} page(s)."
         )
+        self._apply_default_insert_position_to_empty_rows()
         self.refresh_preview()
 
     def select_insert_pdf(self, row_state: dict):
@@ -862,10 +861,34 @@ class MergerTab:
         row_state["page_count"] = page_count
         row_state["preview_page"] = 1
         set_entry_text(row_state["path_entry"], path)
+        if row_state["position_entry"].get().strip() == "0" and self.original_page_count:
+            set_entry_text(
+                row_state["position_entry"],
+                self._default_insert_after_page(),
+            )
         row_state["info_label"].configure(
             text=f"{display_path(path)} has {page_count} page(s)."
         )
         self.refresh_preview()
+
+    def _default_insert_after_page(self) -> str:
+        if self.original_page_count > 0:
+            return str(self.original_page_count)
+        return "0"
+
+    def _insert_position_hint(self) -> str:
+        if self.original_page_count > 0:
+            return f"Defaults to the last original page ({self.original_page_count}). Use 0 to insert before page 1."
+        return "Use 0 to insert before original page 1."
+
+    def _apply_default_insert_position_to_empty_rows(self):
+        default_page = self._default_insert_after_page()
+        for row_state in self.insert_rows:
+            raw_value = row_state["position_entry"].get().strip()
+            if raw_value in {"", "0"}:
+                set_entry_text(row_state["position_entry"], default_page)
+            if not row_state["path"]:
+                row_state["info_label"].configure(text=self._insert_position_hint())
 
     def select_output_folder(self):
         folder = filedialog.askdirectory(title="Select Output Folder")
